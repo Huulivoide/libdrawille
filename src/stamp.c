@@ -110,8 +110,7 @@ int draw_stamp_outline(Canvas* c, Color color, const Stamp* s) {
 
     Point from = transform_point(s->polygon->vertices[s->polygon->last - 1], s->tr_matrix);
     Point to = transform_point(s->polygon->vertices[0], s->tr_matrix);
-    const int x2 = 10;
-    bresenham(c, color, (int) from.x, (int) from.y, x2, (int) to.y);
+    bresenham(c, color, (int) from.x, (int) from.y, (int) to.x, (int) to.y);
 
     for (size_t i = 1; i < s->polygon->last; i++) {
         from = transform_point(s->polygon->vertices[i - 1], s->tr_matrix);
