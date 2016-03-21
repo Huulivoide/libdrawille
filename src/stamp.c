@@ -87,8 +87,12 @@ void bresenham(Canvas* c, Color color, int x1, int y1, int x2, int y2) {
     int err = ((dx > dy) ? dx : -dy) / 2;
     int e2 = 0;
 
-    set_pixel(c, color, x1, y1);
-    while(x1 != x2 && y1 != y2) {
+    for(;;){
+        set_pixel(c, color, x1, y1);
+        if (x1 == x2 && y1 == y2) {
+            break;
+        }
+
         e2 = err;
         if (e2 >-dx) {
             err -= dy;
@@ -98,8 +102,6 @@ void bresenham(Canvas* c, Color color, int x1, int y1, int x2, int y2) {
             err += dx;
             y1 += incy;
         }
-
-        set_pixel(c, color, x1, y1);
     }
 }
 
