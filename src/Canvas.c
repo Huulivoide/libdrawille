@@ -153,14 +153,14 @@ void fill(Canvas* c, const Color color) {
     }
 }
 
-static inline Point extract_scale(const mat3 m) {
+static inline Point extract_scale(const mat3* m) {
     return (Point) {
-        sqrtf(powf(m.m[0][0], 2) + powf(m.m[1][0], 2)),
-        sqrtf(powf(m.m[0][1], 2) + powf(m.m[1][1], 2))
+        sqrtf(powf(m->m[0][0], 2) + powf(m->m[1][0], 2)),
+        sqrtf(powf(m->m[0][1], 2) + powf(m->m[1][1], 2))
     };
 }
 
-static Point calculate_new_size(const Canvas* c, const mat3 m) {
+static Point calculate_new_size(const Canvas* c, const mat3* m) {
     Point ll = transform_point((Point) {0, 0}, m);
     Point lr = transform_point((Point) {c->width, 0}, m);
     Point ur = transform_point((Point) {c->width, c->height}, m);
@@ -177,7 +177,7 @@ static Point calculate_new_size(const Canvas* c, const mat3 m) {
     };
 }
 
-static void copy_canvas(Canvas* source, Canvas* target, const mat3 m) {
+static void copy_canvas(Canvas* source, Canvas* target, const mat3* m) {
     for (int x = 0; x < source->width; x++) {
         for (int y = 0; y < source->height; y++) {
             if (get_pixel(source, x, y) == WHITE) {
@@ -188,7 +188,7 @@ static void copy_canvas(Canvas* source, Canvas* target, const mat3 m) {
     }
 }
 
-Canvas* transform_canvas(Canvas* c, const mat3 transformations,
+Canvas* transform_canvas(Canvas* c, const mat3* transformations,
                          const ScalingMethod sm, const bool crop)
 {
     if (is_identity_matrix(transformations)) {
@@ -198,7 +198,8 @@ Canvas* transform_canvas(Canvas* c, const mat3 transformations,
     Canvas* target = NULL;
 
     Point scale = extract_scale(transformations);
-    mat3 unscaled = scale_mat3(transformations, 1/scale.x, 1/scale.y);
+    mat3* unscaled = clone_mat3(transformations);
+    scale_mat3(unscaled, 1/scale.x, 1/scale.y);
 
     if (!crop) {
         Point new_size = calculate_new_size(c, transformations);

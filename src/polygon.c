@@ -41,7 +41,7 @@ size_t add_vertex(Polygon* p, const Point vertex) {
     return p->last++;
 }
 
-void transform_polygon(Polygon* p, mat3 transformations) {
+void transform_polygon(Polygon* p, const mat3* transformations) {
     for (size_t i = 0; i < p->last; i++) {
         p->vertices[i] = transform_point(p->vertices[i], transformations);
     }

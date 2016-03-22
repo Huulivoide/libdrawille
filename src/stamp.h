@@ -16,7 +16,7 @@ typedef enum StampType StampType;
 
 struct Stamp {
     const StampType type;
-    mat3 tr_matrix;
+    mat3* tr_matrix;
     Polygon* polygon;
     Canvas* bitmap;
 };

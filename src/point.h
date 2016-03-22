@@ -10,6 +10,6 @@ struct Point {
 
 typedef struct Point Point;
 
-Point transform_point(Point p, mat3 m);
+Point transform_point(Point p, const mat3* m);
 
 #endif //LIBDRAWILLE_POINT_H

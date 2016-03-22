@@ -7,62 +7,92 @@
 #include "util.h"
 
 static void test_one(void** state) {
-    assert_matrix(I, scale_mat3(I, 1, 1));
+    mat3* expected = new_mat3();
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 1, 1);
+
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_x(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 5;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 5;
 
-    assert_matrix(expected, scale_mat3(I, 5, 1));
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 5, 1);
+
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_y(void** state) {
-    mat3 expected = I;
-    expected.m[1][1] = 5;
+    mat3* expected = new_mat3();
+    expected->m[1][1] = 5;
 
-    assert_matrix(expected, scale_mat3(I, 1, 5));
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 1, 5);
+
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_xy(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 7;
-    expected.m[1][1] = 3;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 7;
+    expected->m[1][1] = 3;
 
-    assert_matrix(expected, scale_mat3(I, 7, 3));
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 7, 3);
+
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_negative_x(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = -5;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = -5;
 
-    mat3 m = scale_mat3(I, 5, 1);
-    m = scale_mat3(m, -1, 1);
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 5, 1);
+    scale_mat3(scaled, -1, 1);
 
-    assert_matrix(expected, m);
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_negative_y(void** state) {
-    mat3 expected = I;
-    expected.m[1][1] = -5;
+    mat3* expected = new_mat3();
+    expected->m[1][1] = -5;
 
-    mat3 m = scale_mat3(I, 1, 5);
-    m = scale_mat3(m, 1, -1);
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 1, 5);
+    scale_mat3(scaled, 1, -1);
 
-    assert_matrix(expected, m);
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 static void test_several(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 16;
-    expected.m[1][1] = -8;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 16;
+    expected->m[1][1] = -8;
 
-    mat3 m = scale_mat3(I, 4, 2);
-    m = scale_mat3(m, -1, -2);
-    m = scale_mat3(m, -2, 1);
-    m = scale_mat3(m, 2, 2);
+    mat3* scaled = new_mat3();
+    scale_mat3(scaled, 4, 2);
+    scale_mat3(scaled, -1, -2);
+    scale_mat3(scaled, -2, 1);
+    scale_mat3(scaled, 2, 2);
 
-    assert_matrix(expected, m);
+    assert_matrix(expected, scaled);
+    free_mat3(expected);
+    free_mat3(scaled);
 }
 
 int main(int argc, char** argv) {

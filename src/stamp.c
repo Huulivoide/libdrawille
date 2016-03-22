@@ -11,7 +11,13 @@ Stamp* new_polygon_stamp(Polygon* p) {
     }
 
     s->polygon = p;
-    s->tr_matrix = I;
+    s->tr_matrix = new_mat3();
+
+    if (s->tr_matrix == NULL) {
+        free(s);
+        return NULL;
+    }
+
     return s;
 }
 
@@ -66,6 +72,7 @@ void free_stamp(Stamp* s) {
         free_canvas(s->bitmap);
     }
 
+    free_mat3(s->tr_matrix);
     free(s);
 }
 
@@ -74,7 +81,7 @@ void apply_matrix(Stamp* s) {
         transform_polygon(s->polygon, s->tr_matrix);
     }
 
-    s->tr_matrix = I;
+    reset_mat3(s->tr_matrix);
 }
 
 void bresenham(Canvas* c, Color color, int x1, int y1, int x2, int y2) {

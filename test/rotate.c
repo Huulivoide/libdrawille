@@ -8,66 +8,103 @@
 #include "util.h"
 
 static void test_zero(void** state) {
-    assert_matrix(I, rotate_mat3(I, 0));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, 0);
+
+    mat3* expected = new_mat3();
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_90(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 0;
-    expected.m[0][1] = 1;
-    expected.m[1][0] = -1;
-    expected.m[1][1] = 0;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 0;
+    expected->m[0][1] = 1;
+    expected->m[1][0] = -1;
+    expected->m[1][1] = 0;
 
-    assert_matrix(expected, rotate_mat3(I, M_PI_2));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, M_PI_2);
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_180(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = -1;
-    expected.m[1][1] = -1;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = -1;
+    expected->m[1][1] = -1;
 
-    assert_matrix(expected, rotate_mat3(I, M_PI));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, M_PI);
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_270(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 0;
-    expected.m[0][1] = -1;
-    expected.m[1][0] = 1;
-    expected.m[1][1] = 0;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 0;
+    expected->m[0][1] = -1;
+    expected->m[1][0] = 1;
+    expected->m[1][1] = 0;
 
-    assert_matrix(expected, rotate_mat3(I, M_PI + M_PI_2));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, M_PI + M_PI_2);
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_360(void** state) {
-    assert_matrix(I, rotate_mat3(I, 2 * M_PI));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, 2 * M_PI);
+
+    mat3* expected = new_mat3();
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_negative(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = 0;
-    expected.m[0][1] = -1;
-    expected.m[1][0] = 1;
-    expected.m[1][1] = 0;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = 0;
+    expected->m[0][1] = -1;
+    expected->m[1][0] = 1;
+    expected->m[1][1] = 0;
 
-    assert_matrix(expected, rotate_mat3(I, 0 - M_PI_2));
+    mat3* rotated = new_mat3();
+    rotate_mat3(rotated, 0 - M_PI_2);
+
+    assert_matrix(expected, rotated);
+    free_mat3(expected);
+    free_mat3(rotated);
 }
 
 static void test_multiple(void** state) {
-    mat3 expected = I;
-    expected.m[0][0] = -0.7071067812;
-    expected.m[0][1] = 0.7071067812;
-    expected.m[1][0] = -0.7071067812;
-    expected.m[1][1] = -0.7071067812;
+    mat3* expected = new_mat3();
+    expected->m[0][0] = -0.7071067812f;
+    expected->m[0][1] = 0.7071067812f;
+    expected->m[1][0] = -0.7071067812f;
+    expected->m[1][1] = -0.7071067812f;
 
-    mat3 m = rotate_mat3(I, M_PI_4);
-    m = rotate_mat3(m, M_PI_4);
-    m = rotate_mat3(m, M_PI_4);
+    mat3* m = new_mat3();
+    rotate_mat3(m, M_PI_4);
+    rotate_mat3(m, M_PI_4);
+    rotate_mat3(m, M_PI_4);
 
     assert_matrix(expected, m);
+    free_mat3(expected);
+    free_mat3(m);
 }
 
-int main(int argx, char** argv) {
+int main(int argc, char** argv) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_zero),
             cmocka_unit_test(test_90),

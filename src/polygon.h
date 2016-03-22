@@ -16,6 +16,6 @@ void free_polygon(Polygon* p);
 
 size_t add_vertex(Polygon* p, const Point vertex);
 
-void transform_polygon(Polygon* p, mat3 transformations);
+void transform_polygon(Polygon* p, const mat3* transformations);
 
 #endif //LIBDRAWILLE_POLYGON_H

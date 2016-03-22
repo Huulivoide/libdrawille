@@ -40,7 +40,7 @@ void clear(Canvas* c);
 void fill(Canvas* c, const Color color);
 void draw(const Canvas* c, char** buffer);
 
-Canvas* transform_canvas(Canvas* c, const mat3 transformations,
+Canvas* transform_canvas(Canvas* c, const mat3* transformations,
                       const ScalingMethod sm, const bool crop);
 
 #endif // LIBDRAWILLE_CANVAS_H

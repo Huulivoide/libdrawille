@@ -5,6 +5,6 @@
 
 extern const double delta;
 
-void assert_matrix(mat3 expected, mat3 m);
+void assert_matrix(const mat3* expected, const mat3* m);
 
 #endif //LIBDRAWILLE_TESTS_UTIL_H

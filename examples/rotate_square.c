@@ -3,27 +3,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "Canvas.h"
-#include "mat3.h"
-#include "stamp.h"
-
-void stupid_square(Canvas* c, int size) {
-    int max_x_y = size -1;
-
-    for (int i = 0; i < size; i++) {
-        set_pixel(c, WHITE, 0, i);
-        set_pixel(c, WHITE, max_x_y, i);
-        set_pixel(c, WHITE, i, 0);
-        set_pixel(c, WHITE, i, max_x_y);
-    }
-}
+#include "../src/Canvas.h"
+#include "../src/stamp.h"
 
 int main(int argc, char** argv) {
     Canvas* c = new_canvas(100, 67 * 4);
-    Stamp* s = new_circle_stamp(3, 25);
-    s->tr_matrix = I;
+    Stamp* s = new_circle_stamp(4, 25);
 
-    //stupid_square(c, 20);
 
     struct timespec wait, remaining;
     wait.tv_sec = 0;
@@ -33,9 +19,10 @@ int main(int argc, char** argv) {
 
     for (float angle = 0; angle <= M_PI * 6; angle += 0.1) {
         fill(c, BLACK);
-        s->tr_matrix = translate_mat3(I, 30, 50);
-        s->tr_matrix = rotate_mat3(s->tr_matrix, -angle);
-        s->tr_matrix = translate_mat3(s->tr_matrix, -25, -25);
+        reset_mat3(s->tr_matrix);
+        translate_mat3(s->tr_matrix, 25, 50);
+        rotate_mat3(s->tr_matrix, angle);
+        translate_mat3(s->tr_matrix, -25, -25);
 
         draw_stamp_outline(c, WHITE, s);
 
