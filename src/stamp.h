@@ -28,6 +28,8 @@ Stamp* new_circle_stamp(const size_t steps, const size_t radius);
 
 void free_stamp(Stamp* s);
 
+Point get_stamp_center(const Stamp* stamp);
+
 void apply_matrix(Stamp* s);
 
 int draw_stamp_outline(Canvas* c, Color color, const Stamp* s);

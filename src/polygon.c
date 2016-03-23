@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "polygon.h"
 
@@ -45,4 +46,20 @@ void transform_polygon(Polygon* p, const mat3* transformations) {
     for (size_t i = 0; i < p->last; i++) {
         p->vertices[i] = transform_point(p->vertices[i], transformations);
     }
+}
+
+Point get_polygon_center(const Polygon* polygon) {
+    float minx = 0;
+    float miny = 0;
+    float maxx = 0;
+    float maxy = 0;
+
+    for (size_t i = 0; i < polygon->last; i++) {
+        minx = fminf(minx, polygon->vertices[i].x);
+        miny = fminf(miny, polygon->vertices[i].y);
+        maxx = fmaxf(maxx, polygon->vertices[i].x);
+        maxy = fmaxf(maxy, polygon->vertices[i].y);
+    }
+
+    return (Point) {fabsf(minx - maxx) / 2, fabsf(miny - maxy) / 2};
 }

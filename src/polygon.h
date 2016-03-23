@@ -18,4 +18,6 @@ size_t add_vertex(Polygon* p, const Point vertex);
 
 void transform_polygon(Polygon* p, const mat3* transformations);
 
+Point get_polygon_center(const Polygon* polygon);
+
 #endif //LIBDRAWILLE_POLYGON_H

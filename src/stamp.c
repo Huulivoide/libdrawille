@@ -76,6 +76,14 @@ void free_stamp(Stamp* s) {
     free(s);
 }
 
+Point get_stamp_center(const Stamp* stamp) {
+    if (stamp->type == POLYGON) {
+        return get_polygon_center(stamp->polygon);
+    }
+
+    return (Point) {stamp->bitmap->width / 2, stamp->bitmap->height / 2};
+}
+
 void apply_matrix(Stamp* s) {
     if (s->polygon) {
         transform_polygon(s->polygon, s->tr_matrix);
