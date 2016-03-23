@@ -31,8 +31,10 @@ void free_polygon(Polygon* p) {
 
 size_t add_vertex(Polygon* p, const Point vertex) {
     if (p->last == p->size) {
-        Point* new = realloc(p->vertices, p->size * 2);
+        p->size *= 2;
+        Point* new = realloc(p->vertices, p->size);
         if (new == NULL) {
+            p->size /= 2;
             return SIZE_MAX;
         }
         p->vertices = new;
