@@ -31,6 +31,7 @@ Stamp* new_rectangle_stamp(const size_t width, const size_t height) {
     add_vertex(p, (Point) {width, 0});
     add_vertex(p, (Point) {width, height});
     add_vertex(p, (Point) {0, height});
+    close_polygon(p);
 
     Stamp* s = new_polygon_stamp(p);
     if (s == NULL) {
@@ -54,6 +55,7 @@ Stamp* new_circle_stamp(const size_t steps, const size_t radius) {
             sinf(stepa * i) * radius + radius
         }); // +radius to move it to the positive side
     }
+    close_polygon(p);
 
     Stamp* s = new_polygon_stamp(p);
     if (s == NULL) {
@@ -125,13 +127,9 @@ int draw_stamp_outline(Canvas* c, Color color, const Stamp* s) {
         return -1;
     }
 
-    Point from = transform_point(s->polygon->vertices[s->polygon->last - 1], s->tr_matrix);
-    Point to = transform_point(s->polygon->vertices[0], s->tr_matrix);
-    bresenham(c, color, (int) from.x, (int) from.y, (int) to.x, (int) to.y);
-
-    for (size_t i = 1; i < s->polygon->last; i++) {
-        from = transform_point(s->polygon->vertices[i - 1], s->tr_matrix);
-        to = transform_point(s->polygon->vertices[i], s->tr_matrix);
+    for (size_t i = 1; i < s->polygon->next; i++) {
+        Point from = transform_point(s->polygon->vertices[i - 1], s->tr_matrix);
+        Point to = transform_point(s->polygon->vertices[i], s->tr_matrix);
         bresenham(c, color, (int) from.x, (int) from.y, (int) to.x, (int) to.y);
     }
 
