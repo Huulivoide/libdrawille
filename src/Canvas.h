@@ -5,6 +5,8 @@
 
 #include "mat3.h"
 
+extern const unsigned char pixmap[4][2];
+
 enum Color {
     BLACK = 0,
     WHITE
@@ -32,6 +34,11 @@ void free_canvas(Canvas* c);
 
 char** new_buffer(const Canvas* c);
 void free_buffer(char** buffer);
+
+void set_white_pixel_unsafe(Canvas* c, const int x, const int y);
+void set_black_pixel_unsafe(Canvas* c, const int x, const int y);
+void set_white_pixel(Canvas* c, const int x, const int y);
+void set_black_pixel(Canvas* c, const int x, const int y);
 
 void set_pixel(Canvas* c, Color color, const int x, const int y);
 Color get_pixel(const Canvas* c, const int x, const int y);

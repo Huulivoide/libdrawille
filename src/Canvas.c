@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "Canvas.h"
 #include "point.h"
@@ -89,13 +90,31 @@ void free_canvas(Canvas* c) {
     free(c);
 }
 
-inline void set_pixel(Canvas* c, Color color, const int x, const int y) {
+inline void set_white_pixel_unsafe(Canvas* c, const int x, const int y) {
+    c->canvas[y / 4][x / 2] |= pixmap[y % 4][x % 2];
+}
+
+inline void set_black_pixel_unsafe(Canvas* c, const int x, const int y) {
+    c->canvas[y / 4][x / 2] &= ~pixmap[y % 4][x % 2];
+}
+
+inline void set_white_pixel(Canvas* c, const int x, const int y) {
     if(x >= 0 && x < c->width && y >= 0 && y < c->height) {
-        if (color == WHITE) {
-            c->canvas[y / 4][x / 2] |= pixmap[y % 4][x % 2];
-        } else {
-            c->canvas[y / 4][x / 2] &= ~pixmap[y % 4][x % 2];
-        }
+        set_white_pixel_unsafe(c, x, y);
+    }
+}
+
+inline void set_black_pixel(Canvas* c, const int x, const int y) {
+    if(x >= 0 && x < c->width && y >= 0 && y < c->height) {
+        set_black_pixel_unsafe(c, x, y);
+    }
+}
+
+void set_pixel(Canvas* c, Color color, const int x, const int y) {
+    if (color == WHITE) {
+        set_white_pixel(c, x, y);
+    } else {
+        set_black_pixel(c, x, y);
     }
 }
 
@@ -182,7 +201,7 @@ static void copy_canvas(Canvas* source, Canvas* target, const mat3* m) {
         for (int y = 0; y < source->height; y++) {
             if (get_pixel(source, x, y) == WHITE) {
                 Point p = transform_point((Point) {x, y}, m);
-                set_pixel(target, WHITE, (int) round(p.x), (int) lround(p.y));
+                set_white_pixel(target, (int) roundf(p.x), (int) roundf(p.y));
             }
         }
     }
