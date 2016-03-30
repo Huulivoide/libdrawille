@@ -3,6 +3,12 @@ project(libdrawille VERSION 0.0.1 LANGUAGES C)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -pedantic")
 
+if (${UNIX})
+    add_definitions(-DUNIX)
+elseif(${WIN32})
+    add_definitions(-DWINDOWS)
+endif()
+
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(examples)

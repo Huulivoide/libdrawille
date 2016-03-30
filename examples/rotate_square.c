@@ -5,9 +5,16 @@
 
 #include "../src/Canvas.h"
 #include "../src/stamp.h"
+#include "../src/utils.h"
 
 int main(int argc, char** argv) {
-    Canvas* c = new_canvas(100, 67 * 4);
+    size_t width, height;
+
+    if (!get_console_size(&width, &height)) {
+        return 1;
+    }
+
+    Canvas* c = new_canvas(width, height);
     Stamp* s = new_circle_stamp(4, 25);
 
 
