@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "stamp.h"
+#include "utils.h"
 
 Stamp* new_polygon_stamp(Polygon* p) {
     Stamp* s = malloc(sizeof(Stamp));
@@ -136,22 +137,6 @@ int draw_stamp_outline(Canvas* c, Color color, const Stamp* s) {
     return 1;
 }
 
-static inline int to_fixed(const float f) {
-    return (int) roundf(16.0f * f);
-}
-
-static inline int min(const int a, const int b, const int c) {
-    int smaller = (a < b) ? a : b;
-    smaller = (c < smaller) ? c : smaller;
-    return (0 > smaller) ? 0 : smaller;
-}
-
-static inline int max(const int a, const int b, const int c, const int m) {
-    int bigger = (a > b) ? a : b;
-    bigger = (c > bigger) ? c : bigger;
-    return (m < bigger) ? m : bigger;
-}
-
 static inline int half_space(const int C, const int DX, const int DY,
                        const int x0, const int y0, const int x1, const int y1) {
     bool a00 = C + DX * y0 - DY * x0 > 0;
@@ -161,7 +146,7 @@ static inline int half_space(const int C, const int DX, const int DY,
     return a00 | (a10 << 1) | (a01 << 2) | (a11 << 3);
 }
 
-void fill_triangle(Canvas* canvas, const Point v1, const Point v2,
+void fill_triangle(Canvas* restrict canvas, const Point v1, const Point v2,
                    const Point v3, void(*set_pixel)(Canvas*, const int, const int)) {
     // 28.4 fixed-point coordinates
     const int Y1 = to_fixed(v1.y);
@@ -191,10 +176,13 @@ void fill_triangle(Canvas* canvas, const Point v1, const Point v2,
     const int FDY31 = DY31 << 4;
 
     // Bounding rectangle. Also clip to canvas size
-    int minx = (min(X1, X2, X3) + 0xF) >> 4;
-    int maxx = (max(X1, X2, X3, to_fixed(canvas->width)) + 0xF) >> 4;
-    int miny = (min(Y1, Y2, Y3) + 0xF) >> 4;
-    int maxy = (max(Y1, Y2, Y3, to_fixed(canvas->height)) + 0xF) >> 4;
+    int minx, miny, maxx, maxy;
+    get_clamped_min_max(X1, X2, X3, 0, to_fixed(canvas->width), &minx, &maxx);
+    get_clamped_min_max(Y1, Y2, Y3, 0, to_fixed(canvas->height), &miny, &maxy);
+    minx = (minx + 0xF) >> 4;
+    miny = (miny + 0xF) >> 4;
+    maxx = (maxx + 0xF) >> 4;
+    maxy = (maxy + 0xF) >> 4;
 
     // Block size, standard 8x8 (must be power of two)
     const int q = 8;
@@ -274,9 +262,9 @@ int fill_shape(Canvas* c, Color color, const Stamp* s) {
         Point p3 = transform_point(s->polygon->vertices[i], s->tr_matrix);
 
         if (color == WHITE) {
-            fill_triangle(c, p3, p2, p1, set_white_pixel_unsafe);
+            fill_triangle_implementation(c, p3, p2, p1, set_white_pixel_unsafe);
         } else {
-            fill_triangle(c, p3, p2, p1, set_black_pixel_unsafe);
+            fill_triangle_implementation(c, p3, p2, p1, set_black_pixel_unsafe);
         }
 
         p2 = p3;
