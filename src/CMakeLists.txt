@@ -6,5 +6,3 @@ set_source_files_properties(x86/sse.c PROPERTIES COMPILE_FLAGS "-msse -msse2 -ms
 add_library(libdrawille ${SOURCE_FILES})
 target_link_libraries(libdrawille ${MATH})
 
-set_property(TARGET libdrawille PROPERTY C_STANDARD 11)
-set_property(TARGET libdrawille PROPERTY C_STANDARD_REQUIRED ON)
