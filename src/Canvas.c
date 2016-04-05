@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "Canvas.h"
 #include "point.h"
@@ -60,61 +59,29 @@ Canvas* new_canvas(const size_t width, const size_t height) {
     c->cwidth = width / 2;
     c->cheight = height / 4;
 
-    c->canvas = malloc(sizeof(uchar*) * c->cheight);
+    c->canvas = calloc(c->height, c->width);
 
     if (c->canvas == NULL) {
         free(c);
         return NULL;
     }
 
-    for (size_t i = 0; i < c->cheight; i++) {
-        c->canvas[i] = calloc(1, c->cwidth);
-
-        if (c->canvas[i] == NULL) {
-            free_canvas(c);
-            return NULL;
-        }
-    }
-
     return c;
 }
 
 void free_canvas(Canvas* c) {
-    for (size_t i = 0; i < c->cheight; i++) {
-        if (c->canvas[i] != NULL) {
-            free(c->canvas[i]);
-        }
-    }
-
     free(c->canvas);
     free(c);
 }
 
-inline void set_white_pixel_unsafe(Canvas* c, const int x, const int y) {
-    c->canvas[y / 4][x / 2] |= pixmap[y % 4][x % 2];
+inline void set_pixel_unsafe(Canvas* c, const Color color,
+                             const int x, const int y) {
+    c->canvas[y*c->width + x] = color;
 }
 
-inline void set_black_pixel_unsafe(Canvas* c, const int x, const int y) {
-    c->canvas[y / 4][x / 2] &= ~pixmap[y % 4][x % 2];
-}
-
-inline void set_white_pixel(Canvas* c, const int x, const int y) {
+void set_pixel(Canvas* c, const Color color, const int x, const int y) {
     if(x >= 0 && x < c->width && y >= 0 && y < c->height) {
-        set_white_pixel_unsafe(c, x, y);
-    }
-}
-
-inline void set_black_pixel(Canvas* c, const int x, const int y) {
-    if(x >= 0 && x < c->width && y >= 0 && y < c->height) {
-        set_black_pixel_unsafe(c, x, y);
-    }
-}
-
-void set_pixel(Canvas* c, Color color, const int x, const int y) {
-    if (color == WHITE) {
-        set_white_pixel(c, x, y);
-    } else {
-        set_black_pixel(c, x, y);
+        set_pixel_unsafe(c, color, x, y);
     }
 }
 
@@ -123,8 +90,7 @@ Color get_pixel(const Canvas* c, const int x, const int y) {
         return BLACK;
     }
 
-    uchar byte = c->canvas[y / 4][x / 2];
-    return (byte & pixmap[y % 4][x % 2]) ? WHITE : BLACK;
+    return (c->canvas[y*x + x] == WHITE) ? WHITE : BLACK;
 }
 
 static void set_bytes(char* row, const uchar c, const size_t bpos) {
@@ -144,32 +110,28 @@ static void set_bytes(char* row, const uchar c, const size_t bpos) {
 }
 
 void draw(const Canvas* c, char** buffer) {
-    for (size_t i = 0; i < c->cheight; i++) {
+    for (size_t y = 0; y < c->height; y += 4) {
+        size_t buffer_row = y / 4;
         size_t bpos = 0;
-        for(size_t j = 0; j < c->cwidth; j++) {
-            set_bytes(buffer[i], c->canvas[i][j], bpos);
+        for(size_t x = 0; x < c->width; x +=2) {
+            uchar* pos = c->canvas+(y*c->width + x);
+            uchar byte = (pos[0]          << 0) | (pos[1]            << 3) |
+                         (pos[1*c->width] << 1) | (pos[1*c->width+1] << 4) |
+                         (pos[2*c->width] << 2) | (pos[2*c->width+1] << 5) |
+                         (pos[3*c->width] << 6) | (pos[3*c->width+1] << 7);
+            set_bytes(buffer[buffer_row], byte, bpos);
             bpos += 3;
         }
-        buffer[i][bpos] = '\0';
+        buffer[buffer_row][bpos] = '\0';
     }
 }
 
 void clear(Canvas* c) {
-    for (size_t row = 0; row < c->cheight; row++) {
-        memset(c->canvas[row], 0, c->cwidth);
-    }
+    fill(c, BLACK);
 }
 
 void fill(Canvas* c, const Color color) {
-    if (color == BLACK){
-        for (size_t row = 0; row < c->cheight; row++) {
-            memset(c->canvas[row], 0, c->cwidth);
-        }
-    } else {
-        for (size_t row = 0; row < c->cheight; row++) {
-            memset(c->canvas[row], 0xFF, c->cwidth);
-        }
-    }
+    memset(c->canvas, color, c->width * c->height);
 }
 
 static inline Point extract_scale(const mat3* m) {
@@ -201,7 +163,7 @@ static void copy_canvas(Canvas* source, Canvas* target, const mat3* m) {
         for (int y = 0; y < source->height; y++) {
             if (get_pixel(source, x, y) == WHITE) {
                 Point p = transform_point((Point) {x, y}, m);
-                set_white_pixel(target, (int) roundf(p.x), (int) roundf(p.y));
+                set_pixel(target, WHITE, (int) roundf(p.x), (int) roundf(p.y));
             }
         }
     }

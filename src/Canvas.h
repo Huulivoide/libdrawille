@@ -9,7 +9,7 @@ extern const unsigned char pixmap[4][2];
 
 enum Color {
     BLACK = 0,
-    WHITE
+    WHITE = 1
 };
 typedef enum Color Color;
 
@@ -20,7 +20,7 @@ struct Canvas
     size_t cwidth;
     size_t cheight;
 
-    unsigned char** canvas;
+    unsigned char* canvas;
 };
 typedef struct Canvas Canvas;
 
@@ -35,12 +35,8 @@ void free_canvas(Canvas* c);
 char** new_buffer(const Canvas* c);
 void free_buffer(char** buffer);
 
-void set_white_pixel_unsafe(Canvas* c, const int x, const int y);
-void set_black_pixel_unsafe(Canvas* c, const int x, const int y);
-void set_white_pixel(Canvas* c, const int x, const int y);
-void set_black_pixel(Canvas* c, const int x, const int y);
-
-void set_pixel(Canvas* c, Color color, const int x, const int y);
+void set_pixel_unsafe(Canvas* c, const Color color, const int x, const int y);
+void set_pixel(Canvas* c, const Color color, const int x, const int y);
 Color get_pixel(const Canvas* c, const int x, const int y);
 
 void clear(Canvas* c);

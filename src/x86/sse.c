@@ -10,8 +10,8 @@ static inline __m128i to_fixed_sse(float a, float b, float c) {
     return _mm_cvtps_epi32(m);
 }
 
-void fill_triangle_sse4(Canvas* restrict canvas, const Point v1, const Point v2,
-                       const Point v3, void(*set_pixel)(Canvas*, const int, const int)) {
+void fill_triangle_sse4(Canvas* restrict canvas, const Color color,
+                        const Point v1, const Point v2, const Point v3) {
     // Block size, standard 8x8 (must be power of two)
     const int q = 8;
 
@@ -66,6 +66,7 @@ void fill_triangle_sse4(Canvas* restrict canvas, const Point v1, const Point v2,
 
     // Loop through blocks
     for(int y = miny; y < maxy; y += q) {
+        unsigned char* canvas_pos = canvas->canvas+(y*canvas->width);
         for(int x = minx; x < maxx; x += q) {
             // Corners of block
             int x0 = x << 4;
@@ -107,28 +108,30 @@ void fill_triangle_sse4(Canvas* restrict canvas, const Point v1, const Point v2,
 
             // Accept whole block when totally covered
             if(mask_arr[0] == 0xF && mask_arr[1] == 0xF && mask_arr[2] == 0xF) {
-                for(int iy = y; iy < y + q; iy++) {
-                    for(int ix = x; ix < x + q; ix++) {
-                        set_pixel(canvas, ix, iy);
+                for(int iy = 0; iy < q; iy++) {
+                    for(int ix = 0; ix < q; ix++) {
+                        canvas_pos[ix] = color;
                     }
+                    canvas_pos += canvas->width;
                 }
             } else { // Partially covered block
                 __m128i left = _mm_mullo_epi32(DXs, _mm_set1_epi32(y0));
                 __m128i right = _mm_mullo_epi32(DYs, _mm_set1_epi32(x0));
                 __m128i CYs = _mm_add_epi32(Cs, _mm_sub_epi32(left, right));
 
-                for(int iy = y; iy < y + q; iy++) {
+                for(int iy = 0; iy < q; iy++) {
                     int vals[4] __attribute__((aligned(16)));
                     __m128i CXs = CYs;
 
-                    for(int ix = x; ix < x + q; ix++) {
+                    for(int ix = 0; ix < q; ix++) {
                         _mm_store_si128((__m128i*)vals, CXs);
                         if(vals[0] > 0 && vals[1] > 0 && vals[2] > 0) {
-                            set_pixel(canvas, ix, iy);
+                            canvas_pos[ix] = color;
                         }
 
                         CXs = _mm_sub_epi32(CXs, FDYs);
                     }
+                    canvas_pos += canvas->width;
                     CYs = _mm_add_epi32(CYs, FDXs);
                 }
             }

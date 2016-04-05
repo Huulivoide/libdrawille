@@ -35,7 +35,7 @@ void apply_matrix(Stamp* s);
 int draw_stamp_outline(Canvas* c, Color color, const Stamp* s);
 int fill_shape(Canvas* c, Color color, const Stamp* s);
 
-void fill_triangle(Canvas* restrict  canvas, const Point v1, const Point v2,
-               const Point v3, void(*set_pixel)(Canvas*, const int, const int));
+void fill_triangle(Canvas* restrict canvas, const Color color,
+                   const Point v1, const Point v2, const Point v3);
 
 #endif //LIBDRAWILLE_STAMP_H

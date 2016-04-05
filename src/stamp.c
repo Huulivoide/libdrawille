@@ -146,8 +146,8 @@ static inline int half_space(const int C, const int DX, const int DY,
     return a00 | (a10 << 1) | (a01 << 2) | (a11 << 3);
 }
 
-void fill_triangle(Canvas* restrict canvas, const Point v1, const Point v2,
-                   const Point v3, void(*set_pixel)(Canvas*, const int, const int)) {
+void fill_triangle(Canvas* restrict canvas, const Color color,
+                   const Point v1, const Point v2, const Point v3) {
     // 28.4 fixed-point coordinates
     const int Y1 = to_fixed(v1.y);
     const int Y2 = to_fixed(v2.y);
@@ -204,6 +204,7 @@ void fill_triangle(Canvas* restrict canvas, const Point v1, const Point v2,
     // Loop through blocks
     for(int y = miny; y < maxy; y += q) {
         for(int x = minx; x < maxx; x += q) {
+            unsigned char* canvas_pos = canvas->canvas+(y*canvas->width + x);
             // Corners of block
             int x0 = x << 4;
             int x1 = (x + q - 1) << 4;
@@ -220,30 +221,32 @@ void fill_triangle(Canvas* restrict canvas, const Point v1, const Point v2,
 
             // Accept whole block when totally covered
             if(a == 0xF && b == 0xF && c == 0xF) {
-                for(int iy = y; iy < y + q; iy++) {
-                    for(int ix = x; ix < x + q; ix++) {
-                        set_pixel(canvas, ix, iy);
+                for(int iy = 0; iy < q; iy++) {
+                    for(int ix = 0; ix < q; ix++) {
+                        canvas_pos[ix] = color;
                     }
+                    canvas_pos += canvas->width;
                 }
             } else { // Partially covered block
                 int CY1 = C1 + DX12 * y0 - DY12 * x0;
                 int CY2 = C2 + DX23 * y0 - DY23 * x0;
                 int CY3 = C3 + DX31 * y0 - DY31 * x0;
 
-                for(int iy = y; iy < y + q; iy++) {
+                for(int iy = 0; iy < q; iy++) {
                     int CX1 = CY1;
                     int CX2 = CY2;
                     int CX3 = CY3;
 
-                    for(int ix = x; ix < x + q; ix++) {
+                    for(int ix = 0; ix < q; ix++) {
                         if(CX1 > 0 && CX2 > 0 && CX3 > 0) {
-                            set_pixel(canvas, ix, iy);
+                            canvas_pos[ix] = color;
                         }
 
                         CX1 -= FDY12;
                         CX2 -= FDY23;
                         CX3 -= FDY31;
                     }
+                    canvas_pos += canvas->width;
 
                     CY1 += FDX12;
                     CY2 += FDX23;
@@ -260,13 +263,7 @@ int fill_shape(Canvas* c, Color color, const Stamp* s) {
 
     for (int i = 2; i <= s->polygon->next; i++) {
         Point p3 = transform_point(s->polygon->vertices[i], s->tr_matrix);
-
-        if (color == WHITE) {
-            fill_triangle_implementation(c, p3, p2, p1, set_white_pixel_unsafe);
-        } else {
-            fill_triangle_implementation(c, p3, p2, p1, set_black_pixel_unsafe);
-        }
-
+        fill_triangle_implementation(c, color, p3, p2, p1);
         p2 = p3;
     }
 

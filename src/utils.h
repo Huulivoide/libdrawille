@@ -6,8 +6,8 @@
 #include "Canvas.h"
 #include "point.h"
 
-extern void(*fill_triangle_implementation)(Canvas*, const Point, const Point,
-               const Point, void(*set_pixel)(Canvas*, const int, const int));
+extern void(*fill_triangle_implementation)(Canvas*, const Color color, const Point,
+                                           const Point, const Point);
 
 void init_library();
 

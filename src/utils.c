@@ -26,8 +26,8 @@
 #include "x86/x86.h"
 
 // Initialize with the default c based algorithm.
-void(*fill_triangle_implementation)(Canvas*, const Point, const Point,
-    const Point, void(*set_pixel)(Canvas*, const int, const int)) = fill_triangle;
+void(*fill_triangle_implementation)(Canvas*, const Color color, const Point,
+                                    const Point, const Point) = fill_triangle;
 
 bool get_console_size(size_t *width, size_t* height)
 {
