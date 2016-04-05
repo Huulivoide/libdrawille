@@ -1,6 +1,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <x86intrin.h>
+#include <string.h>
 
 #include "x86.h"
 #include "../utils.h"
@@ -109,9 +110,7 @@ void fill_triangle_sse4(Canvas* restrict canvas, const Color color,
             // Accept whole block when totally covered
             if(mask_arr[0] == 0xF && mask_arr[1] == 0xF && mask_arr[2] == 0xF) {
                 for(int iy = 0; iy < q; iy++) {
-                    for(int ix = 0; ix < q; ix++) {
-                        canvas_pos[ix] = color;
-                    }
+                    memset(canvas_pos, color, q);
                     canvas_pos += canvas->width;
                 }
             } else { // Partially covered block
@@ -131,8 +130,8 @@ void fill_triangle_sse4(Canvas* restrict canvas, const Color color,
 
                         CXs = _mm_sub_epi32(CXs, FDYs);
                     }
-                    canvas_pos += canvas->width;
                     CYs = _mm_add_epi32(CYs, FDXs);
+                    canvas_pos += canvas->width;
                 }
             }
         }

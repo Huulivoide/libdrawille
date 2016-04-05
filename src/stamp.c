@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "stamp.h"
 #include "utils.h"
@@ -222,9 +223,7 @@ void fill_triangle(Canvas* restrict canvas, const Color color,
             // Accept whole block when totally covered
             if(a == 0xF && b == 0xF && c == 0xF) {
                 for(int iy = 0; iy < q; iy++) {
-                    for(int ix = 0; ix < q; ix++) {
-                        canvas_pos[ix] = color;
-                    }
+                    memset(canvas_pos, color, q);
                     canvas_pos += canvas->width;
                 }
             } else { // Partially covered block
