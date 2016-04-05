@@ -16,7 +16,7 @@ bool get_console_size(size_t *width, size_t* height);
 void get_clamped_min_max(int a, int b, int c, const int clamp_min,
                          const int clamp_max, int *min, int *max);
 
-inline int to_fixed(const float f) {
+static inline int to_fixed(const float f) {
     return (int) roundf(16.0f * f);
 }
 
