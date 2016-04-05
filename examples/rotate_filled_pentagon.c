@@ -14,6 +14,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    init_library();
+
     Canvas* c = new_canvas(width, height);
     Stamp* s = new_circle_stamp(5, 25);
 
