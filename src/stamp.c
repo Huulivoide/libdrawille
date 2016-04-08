@@ -138,15 +138,6 @@ int draw_stamp_outline(Canvas* c, Color color, const Stamp* s) {
     return 1;
 }
 
-static inline int half_space(const int C, const int DX, const int DY,
-                       const int x0, const int y0, const int x1, const int y1) {
-    bool a00 = C + DX * y0 - DY * x0 > 0;
-    bool a10 = C + DX * y0 - DY * x1 > 0;
-    bool a01 = C + DX * y1 - DY * x0 > 0;
-    bool a11 = C + DX * y1 - DY * x1 > 0;
-    return a00 | (a10 << 1) | (a01 << 2) | (a11 << 3);
-}
-
 void fill_triangle(Canvas* restrict canvas, const Color color,
                    const Point v1, const Point v2, const Point v3) {
     // 28.4 fixed-point coordinates
@@ -198,46 +189,74 @@ void fill_triangle(Canvas* restrict canvas, const Color color,
     int C3 = DY31 * X3 - DX31 * Y3;
 
     // Correct for fill convention
-    if(DY12 < 0 || (DY12 == 0 && DX12 > 0)) C1++;
-    if(DY23 < 0 || (DY23 == 0 && DX23 > 0)) C2++;
-    if(DY31 < 0 || (DY31 == 0 && DX31 > 0)) C3++;
+    C1 += (DY12 < 0 || (DY12 == 0 && DX12 > 0));
+    C2 += (DY23 < 0 || (DY23 == 0 && DX23 > 0));
+    C3 += (DY31 < 0 || (DY31 == 0 && DX31 > 0));
+
+    // find box test offsets for each edge
+    int eo1 = 0;
+    if (FDY12 < 0) eo1 -= FDY12 << 3; //meaning y1 is above y2, block size is 8 ==> shl 3
+    if (FDX12 > 0) eo1 += FDX12 << 3; //meaning x1 is right of x2
+
+    int eo2 = 0;
+    if (FDY23 < 0) eo2 -= FDY23 << 3; //meaning y2 is above y3
+    if (FDX23 > 0) eo2 += FDX23 << 3; //meaning x2 is right of x3
+
+    int eo3 = 0;
+    if (FDY31 < 0) eo3 -= FDY31 << 3; //meaning y3 is above y1
+    if (FDX31 > 0) eo3 += FDX31 << 3; //meaning x3 is right of x1
+
+    //these are the offsets fo the bottom-right block corner
+    const int ei1 = ((DX12 - DY12) << 7) - eo1; //block size is 8 ==> shl 3 + 4
+    const int ei2 = ((DX23 - DY23) << 7) - eo2;
+    const int ei3 = ((DX31 - DY31) << 7) - eo3;
 
     // Loop through blocks
     for(int y = miny; y < maxy; y += q) {
+        // Have we already filled an block?
+        unsigned char filled = 0;
+
         for(int x = minx; x < maxx; x += q) {
             unsigned char* canvas_pos = canvas->canvas+(y*canvas->width + x);
             // Corners of block
             int x0 = x << 4;
-            int x1 = (x + q - 1) << 4;
             int y0 = y << 4;
-            int y1 = (y + q - 1) << 4;
 
-            // Evaluate half-space functions
-            int a = half_space(C1, DX12, DY12, x0, y0, x1, y1);
-            int b = half_space(C2, DX23, DY23, x0, y0, x1, y1);
-            int c = half_space(C3, DX31, DY31, x0, y0, x1, y1);
+            int CX1 = C1 + DX12 * y0 - DY12 * x0;
+            int CX2 = C2 + DX23 * y0 - DY23 * x0;
+            int CX3 = C3 + DX31 * y0 - DY31 * x0;
 
             // Skip block when outside an edge
-            if(a == 0x0 || b == 0x0 || c == 0x0) continue;
+            if((CX1+eo1) < 0 || (CX2+eo2) < 0 || (CX3+eo3) < 0) {
+                if (filled & 0x80) {
+                    // We have hit a filled block before, but now we've hit an
+                    // empty one. we can skip to the next line.
+                    break;
+                } else {
+                    // We have NOT hit a filled block before,
+                    // so we just skip to the next one.
+                    continue;
+                }
+            }
 
             // Accept whole block when totally covered
-            if(a == 0xF && b == 0xF && c == 0xF) {
+            if((CX1+ei1) > 0 && (CX2+ei2) > 0 && (CX3+ei3) > 0) {
                 for(int iy = 0; iy < q; iy++) {
                     memset(canvas_pos, color, q);
                     canvas_pos += canvas->width;
                 }
             } else { // Partially covered block
-                int CY1 = C1 + DX12 * y0 - DY12 * x0;
-                int CY2 = C2 + DX23 * y0 - DY23 * x0;
-                int CY3 = C3 + DX31 * y0 - DY31 * x0;
+                int CY1 = CX1;
+                int CY2 = CX2;
+                int CY3 = CX3;
 
-                for(int iy = 0; iy < q; iy++) {
-                    int CX1 = CY1;
-                    int CX2 = CY2;
-                    int CX3 = CY3;
+                for (int iy = 0; iy < q; iy++) {
+                    CX1 = CY1;
+                    CX2 = CY2;
+                    CX3 = CY3;
 
-                    for(int ix = 0; ix < q; ix++) {
-                        if(CX1 > 0 && CX2 > 0 && CX3 > 0) {
+                    for (int ix = 0; ix < q; ix++) {
+                        if (CX1 > 0 && CX2 > 0 && CX3 > 0) {
                             canvas_pos[ix] = color;
                         }
 
@@ -245,13 +264,14 @@ void fill_triangle(Canvas* restrict canvas, const Color color,
                         CX2 -= FDY23;
                         CX3 -= FDY31;
                     }
-                    canvas_pos += canvas->width;
-
                     CY1 += FDX12;
                     CY2 += FDX23;
                     CY3 += FDX31;
+
+                    canvas_pos += canvas->width;
                 }
             }
+            filled = 0x80;
         }
     }
 }
