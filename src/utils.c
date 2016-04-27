@@ -1,7 +1,9 @@
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-#define bit_SSE41 0x00080000
+#define bit_SSE41 (1 << 19)
+#define bit_AVX2  (1 << 5)
 #if defined(TARGET_COMPILER_MSVC)
     #include <intrin.h>
 #else
@@ -60,20 +62,29 @@ bool get_console_size(size_t *width, size_t* height)
 #endif
 }
 
+void cpuid(unsigned int* registers) {
+    #if defined(TARGET_COMPILER_MSVC)
+        __cpuidex((int*)registers, registers[0], registers[2]);
+    #else
+        __cpuid_count(registers[0], registers[2], *registers, *(registers+1), *(registers+2), *(registers+3));
+    #endif
+}
+
 void init_library() {
-    unsigned int registers[4] = {1,0,0,0};
+    unsigned int registers[4] = {7,0,0,0};
+    cpuid(registers);
 
-#if defined(TARGET_COMPILER_MSVC)
-    __cpuid((int*)registers, registers[0]);
-#else
-    unsigned int level = 0;
-    __get_cpuid(level, registers, registers+1, registers+2, registers+3);
-#endif
-
-    if (registers[2] & bit_SSE41) {
-        fill_triangle_implementation = fill_triangle_sse4;
+    if ((registers[1] & bit_AVX2) != 0) {
+        fill_triangle_implementation = fill_triangle_avx2;
     } else {
-        fill_triangle_implementation = fill_triangle;
+        registers[0] = 1;
+        cpuid(registers);
+
+        if ((registers[2] & bit_SSE41) != 0) {
+            fill_triangle_implementation = fill_triangle_sse4;
+        } else {
+            fill_triangle_implementation = fill_triangle;
+        }
     }
 }
 

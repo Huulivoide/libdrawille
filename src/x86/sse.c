@@ -1,15 +1,9 @@
 #if defined(__i386__) || defined(__x86_64__)
 
-#include <x86intrin.h>
 #include <string.h>
 
 #include "x86.h"
 #include "../utils.h"
-
-typedef union vec4 {
-    __m128i v;
-    int i[4];
-} vec4;
 
 static inline __m128i to_fixed_sse(const float a, const float b, const float c) {
     const __m128 m = _mm_mul_ps(_mm_set_ps(0, c, b, a), _mm_set_ps1(16.0f));
@@ -111,7 +105,7 @@ void fill_triangle_sse4(Canvas* restrict canvas, const Color color,
 
                 for(int iy = 0; iy < q; iy++) {
                     CXs.v = CYs;
-                    
+
                     bool done = false;
                     for(int ix = 0; ix < q; ix++) {
                         if(CXs.i[0] > 0 && CXs.i[1] > 0 && CXs.i[2] > 0) {
