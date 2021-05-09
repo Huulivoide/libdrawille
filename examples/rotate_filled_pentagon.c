@@ -36,7 +36,10 @@ int main(int argc, char** argv) {
 
         draw(c, buffer);
         for (size_t i = 0; buffer[i] != NULL; i++) {
-            printf("%s\n", buffer[i]);
+            printf("%s", buffer[i]);
+            if (buffer[i + 1] != NULL) {
+                printf("\n");
+            }
         }
 
         nanosleep(&wait, &remaining);
